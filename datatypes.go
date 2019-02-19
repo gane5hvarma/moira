@@ -182,6 +182,24 @@ type MetricEvent struct {
 	Pattern string `json:"pattern"`
 }
 
+// Highlight represents search result highlight
+type Highlight struct {
+	TriggerID string   `json:"trigger_id"`
+	Name      []string `json:"name"`
+	Desc      []string `json:"desc"`
+}
+
+// Highlights represents collection of highlights
+type Highlights []Highlight
+
+func (highlights Highlights) GetTriggerIDs() []string {
+	triggerIDs := make([]string, 0)
+	for _, highlight := range highlights {
+		triggerIDs = append(triggerIDs, highlight.TriggerID)
+	}
+	return triggerIDs
+}
+
 // GetSubjectState returns the most critical state of events
 func (events NotificationEvents) GetSubjectState() State {
 	result := StateOK
