@@ -52,16 +52,16 @@ func TestTriggerIndex_Search(t *testing.T) {
 		onlyErrors := false
 
 		Convey("No tags, no searchString, onlyErrors = false", func() {
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs)
 			So(count, ShouldEqual, 31)
 			So(err, ShouldBeNil)
 		})
 
 		Convey("No tags, no searchString, onlyErrors = false, size = -1 (must return all triggers)", func() {
 			size = -1
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs)
 			So(count, ShouldEqual, 31)
 			So(err, ShouldBeNil)
 		})
@@ -69,8 +69,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 		Convey("OnlyErrors = true", func() {
 			size = 50
 			onlyErrors = true
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[:30])
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[:30])
 			So(count, ShouldEqual, 30)
 			So(err, ShouldBeNil)
 		})
@@ -78,8 +78,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 		Convey("OnlyErrors = true, several tags", func() {
 			onlyErrors = true
 			tags = []string{"encounters", "Kobold"}
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[1:3])
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[1:3])
 			So(count, ShouldEqual, 2)
 			So(err, ShouldBeNil)
 		})
@@ -87,8 +87,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 		Convey("OnlyErrors = false, several tags", func() {
 			onlyErrors = false
 			tags = []string{"Something-extremely-new"}
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[30:])
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[30:])
 			So(count, ShouldEqual, 1)
 			So(err, ShouldBeNil)
 		})
@@ -96,8 +96,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 		Convey("Empty list should be", func() {
 			onlyErrors = true
 			tags = []string{"Something-extremely-new"}
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldBeEmpty)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldBeEmpty)
 			So(count, ShouldBeZeroValue)
 			So(err, ShouldBeNil)
 		})
@@ -106,8 +106,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 			onlyErrors = true
 			tags = make([]string, 0)
 			searchString = "dragonshield medium"
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[2:3])
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[2:3])
 			So(count, ShouldEqual, 1)
 			So(err, ShouldBeNil)
 		})
@@ -124,8 +124,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 				triggerChecks[19].ID,
 			}
 
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, deadlyTrapsIDs)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, deadlyTrapsIDs)
 			So(count, ShouldEqual, 4)
 			So(err, ShouldBeNil)
 		})
@@ -139,16 +139,16 @@ func TestTriggerIndex_Search(t *testing.T) {
 		onlyErrors := false
 
 		Convey("No tags, no searchString, onlyErrors = false, page -> 0, size -> 10", func() {
-			actualTriggerIDs, total, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[:10])
+			triggerSearchResults, total, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[:10])
 			So(total, ShouldEqual, 31)
 			So(err, ShouldBeNil)
 		})
 
 		Convey("No tags, no searchString, onlyErrors = false, page -> 1, size -> 10", func() {
 			page = 1
-			actualTriggerIDs, total, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[10:20])
+			triggerSearchResults, total, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[10:20])
 			So(total, ShouldEqual, 31)
 			So(err, ShouldBeNil)
 		})
@@ -156,8 +156,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 		Convey("No tags, no searchString, onlyErrors = false, page -> 1, size -> 20", func() {
 			page = 1
 			size = 20
-			actualTriggerIDs, total, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[20:])
+			triggerSearchResults, total, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[20:])
 			So(total, ShouldEqual, 31)
 			So(err, ShouldBeNil)
 		})
@@ -176,8 +176,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 				triggerChecks[19].ID,
 			}
 
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, deadlyTrapsIDs[:2])
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, deadlyTrapsIDs[:2])
 			So(count, ShouldEqual, 4)
 			So(err, ShouldBeNil)
 		})
@@ -189,8 +189,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 			tags = []string{"traps"}
 			searchString = "deadly"
 
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldBeEmpty)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldBeEmpty)
 			So(count, ShouldEqual, 4)
 			So(err, ShouldBeNil)
 		})
@@ -205,8 +205,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 
 		Convey("OnlyErrors = false, search by name and description, 0 results", func() {
 			searchString = "life female druid"
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldBeEmpty)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldBeEmpty)
 			So(count, ShouldEqual, 0)
 			So(err, ShouldBeNil)
 		})
@@ -219,16 +219,16 @@ func TestTriggerIndex_Search(t *testing.T) {
 			}
 
 			searchString = "easy"
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, easyTriggerIDs)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, easyTriggerIDs)
 			So(count, ShouldEqual, 3)
 			So(err, ShouldBeNil)
 		})
 
 		Convey("OnlyErrors = false, search by name and description, 1 result", func() {
 			searchString = "little monster"
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, triggerIDs[4:5])
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, triggerIDs[4:5])
 			So(count, ShouldEqual, 1)
 			So(err, ShouldBeNil)
 		})
@@ -242,8 +242,8 @@ func TestTriggerIndex_Search(t *testing.T) {
 				triggerChecks[19].ID,
 			}
 
-			actualTriggerIDs, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
-			So(actualTriggerIDs, ShouldResemble, mamaTrapsTriggerIDs)
+			triggerSearchResults, count, err := newIndex.Search(tags, searchString, onlyErrors, page, size)
+			So(triggerSearchResults.GetTriggerIDs(), ShouldResemble, mamaTrapsTriggerIDs)
 			So(count, ShouldEqual, 2)
 			So(err, ShouldBeNil)
 		})
