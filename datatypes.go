@@ -161,8 +161,45 @@ type Trigger struct {
 // TriggerCheck represents trigger data with last check data and check timestamp
 type TriggerCheck struct {
 	Trigger
-	Throttling int64     `json:"throttling"`
-	LastCheck  CheckData `json:"last_check"`
+	Throttling int64             `json:"throttling"`
+	LastCheck  CheckData         `json:"last_check"`
+	HighLights TriggerHighLights `json:"highlights,omitempty"`
+}
+
+// TriggerHighLights represents storage for trigger search result highlights
+type TriggerHighLights struct {
+	Name string `json:"name,omitempty"`
+	Desc string `json:"desc,omitempty"`
+}
+
+// TriggerSearchResults is a collection of search results
+type TriggerSearchResults []TriggerSearchResult
+
+// GetTriggerIDs returns trigger id of all found triggers
+func (triggerSearchResults TriggerSearchResults) GetTriggerIDs() []string {
+	triggerIDs := make([]string, 0)
+	for _, searchResult := range triggerSearchResults {
+		triggerIDs = append(triggerIDs, searchResult.TriggerID)
+	}
+	return triggerIDs
+}
+
+// GetHighLightsByID returns trigger highlights by trigger id
+func (triggerSearchResults TriggerSearchResults) GetHighLightsByID(triggerID string) TriggerHighLights {
+	var highLights TriggerHighLights
+	for _, searchResult := range triggerSearchResults {
+		if searchResult.TriggerID == triggerID {
+			highLights = searchResult.HighLights
+			break
+		}
+	}
+	return highLights
+}
+
+// TriggerSearchResult represents single trigger search result
+type TriggerSearchResult struct {
+	TriggerID  string
+	HighLights TriggerHighLights
 }
 
 // CheckData represents last trigger check data

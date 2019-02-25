@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve"
+
+	"github.com/moira-alert/moira"
 	"github.com/moira-alert/moira/index/mapping"
 )
 
@@ -13,7 +15,7 @@ import (
 // TriggerCheck.Score (desc)
 // Relevance (asc)
 // Trigger.Name (asc)
-func (index *TriggerIndex) Search(filterTags []string, searchString string, onlyErrors bool, page int64, size int64) (triggerIDs []string, total int64, err error) {
+func (index *TriggerIndex) Search(filterTags []string, searchString string, onlyErrors bool, page int64, size int64) (triggerSearchResults moira.TriggerSearchResults, total int64, err error) {
 	if size < 0 {
 		page = 0
 		docs, _ := index.index.DocCount()
@@ -30,10 +32,27 @@ func (index *TriggerIndex) Search(filterTags []string, searchString string, only
 	if searchResult.Hits.Len() == 0 {
 		return
 	}
+
+	results := make([]moira.TriggerSearchResult, 0, total)
+
 	for _, result := range searchResult.Hits {
-		triggerIDs = append(triggerIDs, result.ID)
+		triggerRes := moira.TriggerSearchResult{
+			TriggerID: result.ID,
+		}
+		if nameHighlights, ok := result.Fragments[mapping.TriggerName.String()]; ok {
+			for _, fragment := range nameHighlights {
+				triggerRes.HighLights.Name += fragment
+			}
+		}
+		if descHighlights, ok := result.Fragments[mapping.TriggerDesc.String()]; ok {
+			for _, fragment := range descHighlights {
+				triggerRes.HighLights.Desc += fragment
+			}
+		}
+		results = append(results, triggerRes)
 	}
-	return
+
+	return results, total, err
 }
 
 func buildSearchRequest(filterTags []string, searchString string, onlyErrors bool, page, size int) *bleve.SearchRequest {
@@ -48,6 +67,7 @@ func buildSearchRequest(filterTags []string, searchString string, onlyErrors boo
 	// Relevance (asc)
 	// Trigger.Name (asc)
 	req.SortBy([]string{fmt.Sprintf("-%s", mapping.TriggerLastCheckScore.String()), "_score", mapping.TriggerName.String()})
+	req.Highlight = bleve.NewHighlight()
 
 	return req
 }
