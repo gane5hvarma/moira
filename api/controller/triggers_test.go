@@ -133,6 +133,12 @@ func TestSearchTriggers(t *testing.T) {
 	for i, trigger := range triggerChecks {
 		triggerIDs[i] = trigger.ID
 	}
+	triggerSearchResults := make([]moira.TriggerSearchResult, 0)
+	for _, triggerID := range triggerIDs {
+		triggerSearchResults = append(triggerSearchResults, moira.TriggerSearchResult{
+			TriggerID: triggerID,
+		})
+	}
 
 	triggersPointers := make([]*moira.TriggerCheck, len(triggerChecks))
 	for i, trigger := range triggerChecks {
@@ -146,7 +152,7 @@ func TestSearchTriggers(t *testing.T) {
 
 	Convey("No tags, no text, onlyErrors = false, ", t, func() {
 		Convey("Page is bigger than triggers number", func() {
-			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerIDs, exp, nil)
+			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerSearchResults, exp, nil)
 			mockDatabase.EXPECT().GetTriggerChecks(triggerIDs).Return(triggersPointers, nil)
 			list, err := SearchTriggers(mockDatabase, mockIndex, page, size, false, tags, searchString)
 			So(err, ShouldBeNil)
@@ -160,7 +166,7 @@ func TestSearchTriggers(t *testing.T) {
 
 		Convey("Must return all triggers, when size is -1", func() {
 			size = -1
-			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerIDs, exp, nil)
+			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerSearchResults, exp, nil)
 			mockDatabase.EXPECT().GetTriggerChecks(triggerIDs).Return(triggersPointers, nil)
 			list, err := SearchTriggers(mockDatabase, mockIndex, page, size, false, tags, searchString)
 			So(err, ShouldBeNil)
@@ -174,7 +180,7 @@ func TestSearchTriggers(t *testing.T) {
 
 		Convey("Page is less than triggers number", func() {
 			size = 10
-			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerIDs[:10], exp, nil)
+			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerSearchResults[:10], exp, nil)
 			mockDatabase.EXPECT().GetTriggerChecks(triggerIDs[:10]).Return(triggersPointers[:10], nil)
 			list, err := SearchTriggers(mockDatabase, mockIndex, page, size, false, tags, searchString)
 			So(err, ShouldBeNil)
@@ -187,7 +193,7 @@ func TestSearchTriggers(t *testing.T) {
 
 			Convey("Second page", func() {
 				page = 1
-				mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerIDs[10:20], exp, nil)
+				mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerSearchResults[10:20], exp, nil)
 				mockDatabase.EXPECT().GetTriggerChecks(triggerIDs[10:20]).Return(triggersPointers[10:20], nil)
 				list, err := SearchTriggers(mockDatabase, mockIndex, page, size, false, tags, searchString)
 				So(err, ShouldBeNil)
@@ -207,7 +213,7 @@ func TestSearchTriggers(t *testing.T) {
 		Convey("Only errors", func() {
 			exp = 30
 			// superTrigger31 is the only trigger without errors
-			mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(triggerIDs[:10], exp, nil)
+			mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(triggerSearchResults[:10], exp, nil)
 			mockDatabase.EXPECT().GetTriggerChecks(triggerIDs[:10]).Return(triggersPointers[:10], nil)
 			list, err := SearchTriggers(mockDatabase, mockIndex, page, size, true, tags, searchString)
 			So(err, ShouldBeNil)
@@ -221,7 +227,7 @@ func TestSearchTriggers(t *testing.T) {
 			Convey("Only errors with tags", func() {
 				tags = []string{"encounters", "Kobold"}
 				exp = 2
-				mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(triggerIDs[1:3], exp, nil)
+				mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(triggerSearchResults[1:3], exp, nil)
 				mockDatabase.EXPECT().GetTriggerChecks(triggerIDs[1:3]).Return(triggersPointers[1:3], nil)
 				list, err := SearchTriggers(mockDatabase, mockIndex, page, size, true, tags, searchString)
 				So(err, ShouldBeNil)
@@ -236,7 +242,7 @@ func TestSearchTriggers(t *testing.T) {
 			Convey("Only errors with text terms", func() {
 				searchString = "dragonshield medium"
 				exp = 1
-				mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(triggerIDs[2:3], exp, nil)
+				mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(triggerSearchResults[2:3], exp, nil)
 				mockDatabase.EXPECT().GetTriggerChecks(triggerIDs[2:3]).Return(triggersPointers[2:3], nil)
 				list, err := SearchTriggers(mockDatabase, mockIndex, page, size, true, tags, searchString)
 				So(err, ShouldBeNil)
@@ -274,7 +280,14 @@ func TestSearchTriggers(t *testing.T) {
 					triggerChecks[19].ID,
 				}
 
-				mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(deadlyTrapsIDs, exp, nil)
+				deadlyTrapsSearchResults := make([]moira.TriggerSearchResult, 0)
+				for _, deadlyTrapsID := range deadlyTrapsIDs {
+					deadlyTrapsSearchResults = append(deadlyTrapsSearchResults, moira.TriggerSearchResult{
+						TriggerID: deadlyTrapsID,
+					})
+				}
+
+				mockIndex.EXPECT().SearchTriggers(tags, searchString, true, page, size).Return(deadlyTrapsSearchResults, exp, nil)
 				mockDatabase.EXPECT().GetTriggerChecks(deadlyTrapsIDs).Return(deadlyTrapsPointers, nil)
 				list, err := SearchTriggers(mockDatabase, mockIndex, page, size, true, tags, searchString)
 				So(err, ShouldBeNil)
@@ -294,7 +307,7 @@ func TestSearchTriggers(t *testing.T) {
 
 		Convey("Error from searcher", func() {
 			searcherError := fmt.Errorf("very bad request")
-			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(make([]string, 0), int64(0), searcherError)
+			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(make([]moira.TriggerSearchResult, 0), int64(0), searcherError)
 			list, err := SearchTriggers(mockDatabase, mockIndex, page, size, false, tags, searchString)
 			So(err, ShouldNotBeNil)
 			So(list, ShouldBeNil)
@@ -303,7 +316,7 @@ func TestSearchTriggers(t *testing.T) {
 		Convey("Error from database", func() {
 			size = 50
 			searcherError := fmt.Errorf("very bad request")
-			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerIDs, exp, nil)
+			mockIndex.EXPECT().SearchTriggers(tags, searchString, false, page, size).Return(triggerSearchResults, exp, nil)
 			mockDatabase.EXPECT().GetTriggerChecks(triggerIDs).Return(nil, searcherError)
 			list, err := SearchTriggers(mockDatabase, mockIndex, page, size, false, tags, searchString)
 			So(err, ShouldNotBeNil)
